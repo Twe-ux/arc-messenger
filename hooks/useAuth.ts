@@ -101,23 +101,22 @@ export function useAuth(): UseAuthReturn {
           }),
         });
 
-        if (response.ok) {
-          await refreshSession();
+        // Don't refresh session immediately after status update to avoid loops
+        if (!response.ok) {
+          console.error('Failed to update user status');
         }
       } catch (error) {
         console.error('Failed to update user status:', error);
       }
     };
 
+    // Only add listener, don't call immediately to avoid initial loop
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // Update status to online when hook initializes
-    handleVisibilityChange();
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isAuthenticated, refreshSession]);
+  }, [isAuthenticated]); // Remove refreshSession dependency
 
   return {
     user,

@@ -9,7 +9,7 @@ const connection: ConnectionObject = {};
 async function connectDB(): Promise<void> {
   // Check if we have a connection to the database or if it's currently connecting
   if (connection.isConnected) {
-    console.log('Already connected to MongoDB');
+    // Remove repetitive log to reduce noise
     return;
   }
 

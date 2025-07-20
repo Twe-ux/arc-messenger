@@ -9,9 +9,10 @@ const client = new MongoClient(process.env.MONGODB_URI!);
 const clientPromise = client.connect();
 
 export const authOptions: NextAuthOptions = {
-  adapter: MongoDBAdapter(clientPromise, {
-    databaseName: process.env.MONGODB_DB_NAME,
-  }),
+  // Temporarily disable MongoDB adapter to test JWT-only auth
+  // adapter: MongoDBAdapter(clientPromise, {
+  //   databaseName: process.env.MONGODB_DB_NAME,
+  // }),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -109,8 +110,8 @@ export const authOptions: NextAuthOptions = {
       // Allows relative callback URLs
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url;
-      // After successful sign in, redirect to inbox
+      if (new URL(url).origin === baseUrl) return url;
+      // Default redirect to inbox
       return `${baseUrl}/inbox`;
     },
 
