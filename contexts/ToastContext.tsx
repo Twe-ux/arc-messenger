@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { ToastContainer, ToastProps as UIToastProps } from '@/components/ui/Toast';
 
 export interface ToastProps extends UIToastProps {}
@@ -25,6 +25,11 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastProps[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const addToast = (toast: ToastOptions) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -64,7 +69,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast, toast }}>
       {children}
-      <ToastContainer toasts={toasts} />
+      {mounted && <ToastContainer toasts={toasts} />}
     </ToastContext.Provider>
   );
 }
