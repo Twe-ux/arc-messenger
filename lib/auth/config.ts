@@ -105,6 +105,15 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      // After successful sign in, redirect to inbox
+      return `${baseUrl}/inbox`;
+    },
+
     async session({ session, token }) {
       if (token) {
         session.accessToken = token.accessToken as string;

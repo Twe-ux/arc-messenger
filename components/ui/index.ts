@@ -22,8 +22,10 @@ export type { TypographyProps } from './Typography';
 export { Modal, ConfirmModal } from './Modal';
 export type { ModalProps, ConfirmModalProps } from './Modal';
 
-export { Toast, ToastContainer, useToast } from './Toast';
-export type { ToastProps, ToastContainerProps } from './Toast';
+export { Toast, ToastContainer } from './Toast';
+export type { ToastContainerProps } from './Toast';
+export { useToast } from '@/contexts/ToastContext';
+export type { ToastProps } from '@/contexts/ToastContext';
 
 // Sidebar Components
 export { Sidebar } from '../sidebar/Sidebar';
