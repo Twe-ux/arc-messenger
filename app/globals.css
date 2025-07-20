@@ -1,0 +1,310 @@
+@import 'tailwindcss';
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* CSS Variables for theming */
+:root {
+  /* Light theme colors */
+  --foreground-rgb: 24, 24, 27;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+
+  /* App specific colors */
+  --primary: 168, 85, 247;
+  --primary-dark: 124, 58, 237;
+  --primary-light: 216, 180, 254;
+
+  --background: 255, 255, 255;
+  --background-secondary: 253, 242, 248;
+  --background-tertiary: 250, 245, 255;
+
+  --text-primary: 24, 24, 27;
+  --text-secondary: 82, 82, 91;
+  --text-tertiary: 161, 161, 170;
+
+  --border: 228, 228, 231;
+  --border-focus: 168, 85, 247;
+
+  /* Message colors */
+  --message-sent: 233, 213, 255;
+  --message-received: 243, 244, 246;
+  --message-sending: 254, 243, 199;
+
+  /* Status colors */
+  --success: 16, 185, 129;
+  --warning: 245, 158, 11;
+  --error: 239, 68, 68;
+  --info: 59, 130, 246;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Border radius */
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
+.dark {
+  /* Dark theme colors */
+  --foreground-rgb: 250, 250, 250;
+  --background-start-rgb: 9, 9, 11;
+  --background-end-rgb: 9, 9, 11;
+
+  --background: 9, 9, 11;
+  --background-secondary: 24, 24, 27;
+  --background-tertiary: 39, 39, 42;
+
+  --text-primary: 250, 250, 250;
+  --text-secondary: 161, 161, 170;
+  --text-tertiary: 113, 113, 122;
+
+  --border: 39, 39, 42;
+  --border-focus: 168, 85, 247;
+
+  --message-sent: 107, 33, 168;
+  --message-received: 39, 39, 42;
+  --message-sending: 180, 83, 9;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--background-secondary));
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--text-tertiary));
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--text-secondary));
+}
+
+/* Focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2;
+}
+
+.focus-ring-inset {
+  @apply focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500;
+}
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Message bubble styles */
+.message-bubble {
+  @apply max-w-xs break-words rounded-2xl px-4 py-2;
+}
+
+.message-bubble-sent {
+  @apply rounded-br-sm bg-purple-500 text-white;
+}
+
+.message-bubble-received {
+  @apply rounded-bl-sm bg-gray-100 text-gray-900;
+}
+
+.dark .message-bubble-received {
+  @apply bg-gray-800 text-gray-100;
+}
+
+/* Utility classes */
+.text-gradient {
+  @apply bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent;
+}
+
+.bg-gradient-arc {
+  @apply bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700;
+}
+
+.border-gradient {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--primary)),
+    rgb(var(--primary-dark))
+  );
+  border-radius: var(--radius);
+}
+
+.border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: rgb(var(--background));
+  border-radius: calc(var(--radius) - 1px);
+}
+
+/* Glass effect */
+.glass {
+  @apply border border-white/20 bg-white/10 backdrop-blur-md;
+}
+
+.dark .glass {
+  @apply border border-white/10 bg-black/10 backdrop-blur-md;
+}
+
+/* Sidebar specific styles */
+.sidebar-gradient {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--primary-light)) 0%,
+    rgb(var(--primary)) 50%,
+    rgb(var(--primary-dark)) 100%
+  );
+}
+
+/* Button variants */
+.btn-primary {
+  @apply bg-purple-500 text-white hover:bg-purple-600 focus:ring-purple-500;
+}
+
+.btn-secondary {
+  @apply bg-purple-100 text-purple-700 hover:bg-purple-200 focus:ring-purple-400;
+}
+
+.btn-ghost {
+  @apply text-gray-700 hover:bg-gray-100 focus:ring-gray-400;
+}
+
+.dark .btn-ghost {
+  @apply text-gray-300 hover:bg-gray-800;
+}
+
+/* Input styles */
+.input-field {
+  @apply block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-purple-500;
+}
+
+.dark .input-field {
+  @apply border-gray-600 bg-gray-800 text-white;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0, 0, 0;
+    --text-primary: 0, 0, 0;
+    --background: 255, 255, 255;
+  }
+
+  .dark {
+    --border: 255, 255, 255;
+    --text-primary: 255, 255, 255;
+    --background: 0, 0, 0;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+}
