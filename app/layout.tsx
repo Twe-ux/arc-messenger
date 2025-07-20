@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { SessionProvider } from '@/providers/SessionProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,9 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <div id="root">{children}</div>
-        <div id="modal-root" />
-        <div id="toast-root" />
+        <SessionProvider>
+          <div id="root">{children}</div>
+          <div id="modal-root" />
+          <div id="toast-root" />
+        </SessionProvider>
       </body>
     </html>
   );

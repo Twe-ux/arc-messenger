@@ -22,6 +22,16 @@ const UserSchema = new Schema<IUser>(
       type: String,
       default: null,
     },
+    // OAuth provider info
+    provider: {
+      type: String,
+      enum: ['google', 'email'],
+      default: 'email',
+    },
+    providerId: {
+      type: String,
+      sparse: true, // Allow multiple null values
+    },
     gmailTokens: {
       accessToken: String,
       refreshToken: String,
@@ -47,6 +57,16 @@ const UserSchema = new Schema<IUser>(
           default: true,
         },
       },
+      privacy: {
+        onlineStatus: {
+          type: Boolean,
+          default: true,
+        },
+        readReceipts: {
+          type: Boolean,
+          default: true,
+        },
+      },
       language: {
         type: String,
         default: 'en',
@@ -62,6 +82,10 @@ const UserSchema = new Schema<IUser>(
       default: 'offline',
     },
     lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
+    lastActiveAt: {
       type: Date,
       default: Date.now,
     },
@@ -142,3 +166,4 @@ try {
 }
 
 export default User;
+export { User };

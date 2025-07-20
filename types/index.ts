@@ -1,11 +1,80 @@
 import { Document, ObjectId } from 'mongoose';
 
+// NextAuth.js types extension
+declare module 'next-auth' {
+  interface Session {
+    accessToken?: string;
+    userId?: string;
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      avatar?: string;
+      preferences?: UserPreferences;
+      status?: UserStatus;
+    };
+  }
+
+  interface JWT {
+    accessToken?: string;
+    refreshToken?: string;
+    userId?: string;
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    accessToken?: string;
+    refreshToken?: string;
+    userId?: string;
+  }
+}
+
+// Additional Auth types
+export interface UserPreferences {
+  theme: 'light' | 'dark' | 'system';
+  notifications: {
+    email: boolean;
+    push: boolean;
+    sound: boolean;
+  };
+  privacy: {
+    onlineStatus: boolean;
+    readReceipts: boolean;
+  };
+  language: string;
+  timezone: string;
+}
+
+export interface GmailTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt?: Date;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string;
+  provider: 'google' | 'email';
+  providerId?: string;
+  preferences: UserPreferences;
+  status: UserStatus;
+  gmailTokens?: GmailTokens;
+  createdAt: Date;
+  lastActiveAt: Date;
+}
+
 // User types
 export interface IUser extends Document {
   _id: ObjectId;
   email: string;
   name: string;
   avatar?: string;
+  provider?: 'google' | 'email';
+  providerId?: string;
   gmailTokens?: {
     accessToken: string;
     refreshToken: string;
@@ -18,11 +87,16 @@ export interface IUser extends Document {
       push: boolean;
       sound: boolean;
     };
+    privacy: {
+      onlineStatus: boolean;
+      readReceipts: boolean;
+    };
     language: string;
     timezone: string;
   };
   status: 'online' | 'offline' | 'away' | 'busy';
   lastSeen: Date;
+  lastActiveAt: Date;
   isEmailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;

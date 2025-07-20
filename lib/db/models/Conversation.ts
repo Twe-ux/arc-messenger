@@ -114,7 +114,7 @@ ConversationSchema.methods.addParticipant = function(userId: string) {
 
 // Instance method to remove participant
 ConversationSchema.methods.removeParticipant = function(userId: string) {
-  this.participants = this.participants.filter(id => id.toString() !== userId);
+  this.participants = this.participants.filter((id: any) => id.toString() !== userId);
   return this.save();
 };
 

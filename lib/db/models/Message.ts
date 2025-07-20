@@ -154,7 +154,7 @@ MessageSchema.virtual('reactionCounts').get(function() {
 
 // Instance method to mark as read by user
 MessageSchema.methods.markAsReadBy = function(userId: string) {
-  const existingRead = this.readBy.find(read => read.userId.toString() === userId);
+  const existingRead = this.readBy.find((read: any) => read.userId.toString() === userId);
   if (!existingRead) {
     this.readBy.push({
       userId,
@@ -169,7 +169,7 @@ MessageSchema.methods.markAsReadBy = function(userId: string) {
 // Instance method to add reaction
 MessageSchema.methods.addReaction = function(userId: string, emoji: string) {
   // Remove existing reaction from this user
-  this.reactions = this.reactions?.filter(reaction => 
+  this.reactions = this.reactions?.filter((reaction: any) => 
     reaction.userId.toString() !== userId || reaction.emoji !== emoji
   ) || [];
   
@@ -185,7 +185,7 @@ MessageSchema.methods.addReaction = function(userId: string, emoji: string) {
 
 // Instance method to remove reaction
 MessageSchema.methods.removeReaction = function(userId: string, emoji: string) {
-  this.reactions = this.reactions?.filter(reaction => 
+  this.reactions = this.reactions?.filter((reaction: any) => 
     !(reaction.userId.toString() === userId && reaction.emoji === emoji)
   ) || [];
   
@@ -273,7 +273,7 @@ MessageSchema.statics.searchMessages = function(userId: string, query: string, c
 // Static method to get message statistics
 MessageSchema.statics.getStatistics = function(conversationId: string, timeRange?: { from: Date; to: Date }) {
   const matchStage: any = { 
-    conversationId: mongoose.Types.ObjectId(conversationId),
+    conversationId: new mongoose.Types.ObjectId(conversationId),
     deletedAt: null,
   };
   
