@@ -34,7 +34,7 @@
 
 ### Database Setup
 
-- [ ] Create MongoDB Atlas account and cluster
+- [✓] Create MongoDB Atlas account and cluster
 - [✓] Install Mongoose and MongoDB packages
 - [✓] Create database connection utility
 - [✓] Design and create User schema
@@ -45,7 +45,7 @@
 
 ### DevOps Foundation
 
-- [ ] Create GitHub repository
+- [✓] Create GitHub repository
 - [ ] Set up branch protection rules
 - [ ] Create PR template
 - [ ] Create issue templates

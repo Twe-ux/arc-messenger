@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverActions: true,
+    // Server Actions are now stable in Next.js 14
   },
   images: {
     domains: ['lh3.googleusercontent.com', 'cloudinary.com', 'res.cloudinary.com'],
