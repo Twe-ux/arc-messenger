@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
-import { Button } from './Button';
+import { Button } from './button';
 
 export interface ToastProps {
   id: string;
@@ -122,7 +122,7 @@ const Toast = forwardRef<HTMLDivElement, ToastProps>(({
         
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="sm"
           onClick={handleClose}
           className="h-6 w-6 opacity-60 hover:opacity-100"
         >

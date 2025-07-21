@@ -1,12 +1,9 @@
 // Base UI Components
-export { Button, buttonVariants } from './Button';
-export type { ButtonProps } from './Button';
+export { Button, buttonVariants } from './button';
 
-export { Input, inputVariants } from './Input';
-export type { InputProps } from './Input';
+export { Input } from './input';
 
-export { Avatar, AvatarGroup, avatarVariants } from './Avatar';
-export type { AvatarProps, AvatarGroupProps } from './Avatar';
+export { Avatar, AvatarImage, AvatarFallback } from './avatar';
 
 export { 
   Typography, 

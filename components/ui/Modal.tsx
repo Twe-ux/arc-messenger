@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
-import { Button } from './Button';
+import { Button } from './button';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -128,7 +128,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(({
                 {showCloseButton && (
                   <Button
                     variant="ghost"
-                    size="icon-sm"
+                    size="sm"
                     onClick={onClose}
                     className="ml-4 text-gray-400 hover:text-gray-600"
                   >
@@ -195,7 +195,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <Button
           variant={variant === 'destructive' ? 'destructive' : 'default'}
           onClick={onConfirm}
-          loading={loading}
+          disabled={loading}
         >
           {confirmText}
         </Button>

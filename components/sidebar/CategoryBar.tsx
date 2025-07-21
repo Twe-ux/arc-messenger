@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Plus, MoreHorizontal, GripVertical } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface CategoryItem {
   id: string;
@@ -122,7 +122,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
             {onCategoriesReorder && (
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="sm"
                 onClick={() => setIsReordering(!isReordering)}
                 className={cn(
                   'text-purple-200 hover:text-white hover:bg-white/10',
@@ -136,7 +136,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
             {onAddCategory && (
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="sm"
                 onClick={onAddCategory}
                 className="text-purple-200 hover:text-white hover:bg-white/10"
                 title="Add Category"

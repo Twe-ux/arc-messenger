@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Search, Settings, User, Mail, MessageSquare, Heart, Archive, Trash2, Menu, X } from 'lucide-react';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Avatar } from '@/components/ui/Avatar';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface SidebarProps {
@@ -123,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="sm"
           onClick={handleToggle}
           className="text-white hover:bg-white/10 border-0"
         >
@@ -146,13 +146,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               transition={{ duration: 0.2 }}
               className="flex items-center gap-3"
             >
-              <Avatar
-                src={user?.avatar}
-                name={user?.name}
-                size="default"
-                status="online"
-                showStatus
-              />
+              <div className="relative">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={user?.avatar} alt={user?.name || 'User'} />
+                  <AvatarFallback>{(user?.name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-purple-700 rounded-full"></span>
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-medium truncate">
                   {user?.name || 'User'}
@@ -163,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="sm"
                 className="text-white hover:bg-white/10"
               >
                 <Settings className="w-4 h-4" />
@@ -177,13 +177,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               transition={{ duration: 0.2 }}
               className="flex justify-center"
             >
-              <Avatar
-                src={user?.avatar}
-                name={user?.name}
-                size="default"
-                status="online"
-                showStatus
-              />
+              <div className="relative">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={user?.avatar} alt={user?.name || 'User'} />
+                  <AvatarFallback>{(user?.name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-purple-700 rounded-full"></span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -199,13 +199,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2, delay: 0.1 }}
             >
-              <Input
-                placeholder="Search conversations..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                leftIcon={<Search className="w-4 h-4" />}
-                className="bg-white/10 border-white/20 text-white placeholder:text-purple-200 focus-visible:ring-white/30"
-              />
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-200" />
+                <Input
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-200 focus-visible:ring-white/30 pl-10"
+                />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
