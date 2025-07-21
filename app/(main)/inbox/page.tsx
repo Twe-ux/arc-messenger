@@ -15,6 +15,7 @@ export default function InboxPage() {
     setSelectedMessage,
     setMessageContent,
     setLoadingMessage,
+    updateMessageReadStatus,
   } = useMessage();
 
   // Handle bubble click to fetch and display full message content
@@ -23,6 +24,28 @@ export default function InboxPage() {
     setSelectedMessage(message);
     setLoadingMessage(true);
     setMessageContent(null);
+
+    // Mark message as read immediately when clicked (optimistic update)
+    if (message.unread) {
+      updateMessageReadStatus(message.id, message.threadId);
+
+      // Call API to mark as read in Gmail
+      try {
+        await fetch(`/api/gmail/conversations/${message.threadId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            action: 'markThreadAsRead',
+            messageId: message.id,
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to mark message as read:', error);
+      }
+    }
 
     try {
       // Fetch the full message content from Gmail API
@@ -150,9 +173,12 @@ export default function InboxPage() {
                         <Clock className="h-4 w-4" />
                         <span>{selectedMessage.time}</span>
                         {selectedMessage.unread && (
-                          <span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700">
-                            Non lu
-                          </span>
+                          <div className="flex items-center gap-4">
+                            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500"></div>
+                            <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-semibold text-white">
+                              Non lu
+                            </span>
+                          </div>
                         )}
                       </div>
                     </div>

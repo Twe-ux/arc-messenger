@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Search, Settings, User, Mail, MessageSquare, Heart, Archive, Trash2, Menu, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface SidebarProps {

@@ -37,8 +37,8 @@ import {
   SidebarMenuAction,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { ConversationData } from './chat/ConversationCard';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { ConversationMessage } from '@/contexts/MessageContext';
-import { User, Clock, Mail } from 'lucide-react';
+import { Clock, Mail } from 'lucide-react';
 
 interface MessageBubbleListProps {
   messages: ConversationMessage[];
@@ -9,10 +9,14 @@ interface MessageBubbleListProps {
   loading?: boolean;
 }
 
-export function MessageBubbleList({ messages, onMessageClick, loading }: MessageBubbleListProps) {
+export function MessageBubbleList({
+  messages,
+  onMessageClick,
+  loading,
+}: MessageBubbleListProps) {
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-32">
+      <div className="flex h-32 items-center justify-center">
         <div className="text-gray-500">Chargement de la conversation...</div>
       </div>
     );
@@ -20,9 +24,9 @@ export function MessageBubbleList({ messages, onMessageClick, loading }: Message
 
   if (messages.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32">
+      <div className="flex h-32 items-center justify-center">
         <div className="text-center text-gray-500">
-          <Mail className="mx-auto h-8 w-8 mb-2 text-gray-400" />
+          <Mail className="mx-auto mb-2 h-8 w-8 text-gray-400" />
           <p>Aucun message dans cette conversation</p>
         </div>
       </div>
@@ -30,66 +34,79 @@ export function MessageBubbleList({ messages, onMessageClick, loading }: Message
   }
 
   return (
-    <div className="space-y-3 p-4">
+    <div className="space-y-4">
       {messages.map((message, index) => {
-        const isFirstFromSender = index === 0 || messages[index - 1].from !== message.from;
-        const isLastFromSender = index === messages.length - 1 || messages[index + 1].from !== message.from;
-        
+        const isFirstFromSender =
+          index === 0 || messages[index - 1].from !== message.from || messages[index - 1].isOwn !== message.isOwn;
+        const isLastFromSender =
+          index === messages.length - 1 ||
+          messages[index + 1].from !== message.from || messages[index + 1].isOwn !== message.isOwn;
+
+        // Determine alignment based on message ownership
+        const isOwn = message.isOwn || false;
+
         return (
-          <div key={message.id} className="flex items-start gap-3">
-            {/* Avatar - show only for first message from sender */}
-            <div className="w-8 h-8 flex-shrink-0">
-              {isFirstFromSender ? (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500 text-white text-xs font-medium">
+          <div
+            key={message.id}
+            className={`mb-3 ${isFirstFromSender ? 'mt-4' : ''} ${index < messages.length - 1 ? 'border-b border-red-500 pb-4' : ''}`}
+          >
+            {/* Sender name for first message in group */}
+            {isFirstFromSender && (
+              <div className="mb-2 flex items-center gap-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 text-xs font-medium text-white">
                   {message.from.charAt(0).toUpperCase()}
                 </div>
-              ) : (
-                <div className="w-8 h-8" /> // Spacer
-              )}
-            </div>
-            
-            {/* Message bubble */}
-            <div className="flex-1 max-w-lg">
-              {/* Show sender name only for first message */}
-              {isFirstFromSender && (
-                <div className="text-sm font-medium text-gray-700 mb-1">
+                <span className="text-sm font-medium text-gray-700">
                   {message.from}
-                </div>
-              )}
-              
-              {/* Message content */}
-              <div 
-                onClick={() => onMessageClick(message)}
-                className={`
-                  cursor-pointer rounded-lg p-3 shadow-sm transition-colors hover:shadow-md
-                  ${message.unread 
-                    ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
-                    : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                  }
-                `}
+                </span>
+              </div>
+            )}
+
+            {/* Message content */}
+            <div
+              onClick={() => onMessageClick(message)}
+              style={{
+                padding: `1%`,
+                marginLeft: `2.3rem`,
+                marginBottom: `1rem`,
+              }}
+              className={`w-[700px] cursor-pointer rounded-2xl p-3 shadow-md transition-all duration-200 hover:shadow-xl ${
+                message.unread
+                  ? 'border-2 border-blue-300 bg-blue-50 font-medium hover:bg-blue-100'
+                  : 'border border-gray-200 bg-gray-50 hover:bg-gray-100'
+              } `}
+            >
+              {/* Message preview */}
+              <p
+                className={`text-sm leading-relaxed ${
+                  message.unread ? 'font-medium text-gray-900' : 'text-gray-700'
+                }`}
               >
-                {/* Message preview */}
-                <p className="text-sm text-gray-800 leading-relaxed">
-                  {message.preview || message.subject || 'Message sans aperçu'}
-                </p>
-                
-                {/* Message metadata */}
-                <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                  <Clock className="w-3 h-3" />
+                {message.preview || message.subject || message.content || 'Message sans aperçu'}
+              </p>
+
+              {/* Time and status */}
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Clock className="h-3 w-3" />
                   <span>{message.time}</span>
-                  {message.unread && (
-                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-medium">
+                </div>
+                {message.unread && (
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500"></div>
+                    <span
+                      className="h-5 w-12 rounded-full bg-blue-500 px-2 py-2 text-center text-[10px] font-semibold text-white"
+                      style={{ padding: '0.25rem' }}
+                    >
                       Non lu
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-              
-              {/* Add more space after last message from sender */}
-              {isLastFromSender && index < messages.length - 1 && (
-                <div className="h-2" />
-              )}
             </div>
+
+            {/* Add more space after last message from sender */}
+            {isLastFromSender && <div className="mb-2" />}
           </div>
         );
       })}

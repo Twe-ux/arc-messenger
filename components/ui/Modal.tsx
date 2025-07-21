@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
-import { Button } from './button';
+import { Button } from './Button';
 
 export interface ModalProps {
   isOpen: boolean;

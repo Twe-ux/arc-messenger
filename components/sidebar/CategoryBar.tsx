@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Plus, MoreHorizontal, GripVertical } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 
 export interface CategoryItem {
   id: string;

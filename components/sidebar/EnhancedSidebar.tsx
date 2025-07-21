@@ -22,9 +22,9 @@ import {
   Video,
   Bell
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/contexts/ThemeContext';
 

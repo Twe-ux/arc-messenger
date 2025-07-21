@@ -28,7 +28,7 @@ export class GmailPushService {
 
       const watchRequest: GmailWatchRequest = {
         topicName: this.pubsubTopic,
-        labelIds: labelIds || ['INBOX'], // Default to watching INBOX
+        labelIds: labelIds || ['INBOX', 'SENT'], // Watch both INBOX and SENT
         labelFilterAction: 'include',
       };
 

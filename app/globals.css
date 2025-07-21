@@ -1,11 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 /* Base styles */
 * {
@@ -274,7 +268,12 @@ a {
 }
 
 .bg-gradient-arc {
-  background: linear-gradient(135deg, rgb(168, 85, 247), rgb(147, 51, 234), rgb(124, 58, 237));
+  background: linear-gradient(
+    135deg,
+    rgb(168, 85, 247),
+    rgb(147, 51, 234),
+    rgb(124, 58, 237)
+  );
 }
 
 .border-gradient {
@@ -465,6 +464,6 @@ a {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground bg-background;
   }
 }

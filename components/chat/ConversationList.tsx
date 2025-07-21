@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ConversationCard, ConversationData } from './ConversationCard';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Search, Filter, Plus } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 export interface ConversationListProps {
   conversations?: ConversationData[];

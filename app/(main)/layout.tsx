@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useGmailMessages } from '@/hooks/useGmailMessages';
 import { MessageProvider, useMessage, Correspondent, ConversationMessage } from '@/contexts/MessageContext';
+import { useSession } from 'next-auth/react';
+import { SwipeableCorrespondentItem } from '@/components/sidebar/SwipeableCorrespondentItem';
 import {
   Archive,
   Briefcase,
@@ -40,6 +42,9 @@ function MainLayoutContent({
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
+  // Use session for user info
+  const { data: session } = useSession();
+
   // Use theme context
   const {
     backgroundColor,
@@ -54,6 +59,8 @@ function MainLayoutContent({
     loading: gmailLoading,
     error: gmailError,
     refreshMessages,
+    updateMessageReadStatus: updateGmailMessageReadStatus,
+    deleteCorrespondentMessages,
   } = useGmailMessages(50); // Increased from 15 to 50 messages
 
   // Use message context
@@ -64,27 +71,51 @@ function MainLayoutContent({
     setLoadingConversation,
     setSelectedMessage, 
     setMessageContent, 
-    setLoadingMessage 
+    setLoadingMessage,
+    setExternalSyncFunction,
+    setExternalDeleteFunction,
+    deleteCorrespondent
   } = useMessage();
 
-  // Group messages by correspondent (unique senders)
+  // Set up Gmail hook sync functions
+  React.useEffect(() => {
+    setExternalSyncFunction(() => updateGmailMessageReadStatus);
+    setExternalDeleteFunction(deleteCorrespondentMessages);
+  }, [updateGmailMessageReadStatus]); // deleteCorrespondentMessages is now stable
+
+  // Group messages by correspondent (conversation partners)
   const correspondents: Correspondent[] = React.useMemo(() => {
+    // First, let's get the current user's email
+    const currentUserEmail = session?.user?.email?.toLowerCase();
+    
     const grouped = gmailMessages.reduce((acc, message) => {
-      const email = message.from.toLowerCase().trim();
+      // Skip if this is somehow the current user (shouldn't happen but safety check)
+      const senderEmail = message.from.toLowerCase().trim();
+      if (senderEmail === currentUserEmail) {
+        return acc;
+      }
       
-      if (!acc[email]) {
-        acc[email] = {
-          email: email,
+      // Group by sender email (this should be the correspondent)
+      const correspondentKey = senderEmail;
+      
+      if (!acc[correspondentKey]) {
+        acc[correspondentKey] = {
+          email: senderEmail,
           name: message.from,
           lastMessage: message,
           messageCount: 1,
           unreadCount: message.unread ? 1 : 0,
+          threadId: message.threadId, // Store thread ID for loading complete conversations
         };
       } else {
         // Update if this message is more recent
-        const existing = acc[email];
-        if (new Date(message.time) > new Date(existing.lastMessage.time)) {
+        const existing = acc[correspondentKey];
+        const messageTime = new Date(message.time);
+        const existingTime = new Date(existing.lastMessage.time);
+        
+        if (messageTime > existingTime) {
           existing.lastMessage = message;
+          existing.threadId = message.threadId; // Update to most recent thread
         }
         existing.messageCount++;
         if (message.unread) {
@@ -101,7 +132,7 @@ function MainLayoutContent({
     );
   }, [gmailMessages]);
 
-  // Handle correspondent click to load all messages from that person
+  // Handle correspondent click to load complete Gmail thread
   const handleCorrespondentClick = async (correspondent: Correspondent) => {
     console.log('Correspondent selected:', correspondent);
     setSelectedCorrespondent(correspondent);
@@ -110,19 +141,88 @@ function MainLayoutContent({
     setSelectedMessage(null);
 
     try {
-      // Filter all messages from this correspondent
+      console.log('Loading ALL messages for correspondent:', correspondent.email);
+
+      let allMessages: any[] = [];
+
+      // Step 1: Get individual messages from this correspondent (fast local filtering)
+      console.log('Loading individual messages from local data...');
       const correspondentMessages = gmailMessages
-        .filter(msg => msg.from.toLowerCase().trim() === correspondent.email)
-        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()) // Oldest first
+        .filter(msg => {
+          const msgFrom = msg.from.toLowerCase().trim();
+          const corrEmail = correspondent.email.toLowerCase().trim();
+          return msgFrom === corrEmail;
+        })
         .map(msg => ({
           ...msg,
-          isOwn: false, // Gmail messages are from others
+          isOwn: false,
+          messageType: 'individual', // Mark as individual email
         }));
 
-      setConversationMessages(correspondentMessages);
-      console.log(`Loaded ${correspondentMessages.length} messages from ${correspondent.name}`);
+      console.log(`📧 Found ${correspondentMessages.length} individual messages from ${correspondent.email}`);
+      allMessages = [...correspondentMessages];
+
+      // Step 2: Try to load conversation thread (with sent/received messages)
+      if (correspondent.threadId) {
+        try {
+          console.log('Loading conversation thread:', correspondent.threadId);
+          const response = await fetch(`/api/gmail/conversations/${correspondent.threadId}/messages`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Thread messages loaded:', data);
+
+            if (data.messages && Array.isArray(data.messages)) {
+              // Convert thread messages to conversation format
+              const threadMessages = data.messages
+                .map((msg: any) => ({
+                  id: msg.id + '_thread', // Unique ID to avoid conflicts
+                  from: msg.senderName || msg.senderId || correspondent.name,
+                  preview: msg.content?.substring(0, 200) || msg.snippet || 'No preview available',
+                  time: new Date(msg.timestamp).toLocaleString(),
+                  unread: false,
+                  subject: msg.subject || `Thread: ${msg.senderName}`,
+                  threadId: correspondent.threadId,
+                  isEmail: true,
+                  content: msg.content,
+                  isOwn: msg.isOwn || false,
+                  messageType: 'conversation', // Mark as conversation message
+                }));
+
+              console.log(`💬 Found ${threadMessages.length} conversation messages`);
+              allMessages = [...allMessages, ...threadMessages];
+            }
+          }
+        } catch (threadError) {
+          console.warn('❌ Failed to load thread conversation:', threadError);
+        }
+      }
+
+      // Step 3: Sort all messages by time and remove duplicates
+      const uniqueMessages = allMessages
+        .filter((msg, index, self) => 
+          index === self.findIndex(m => m.id === msg.id || (m.content === msg.content && m.time === msg.time))
+        )
+        .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
+      console.log(`🎯 Final result: ${uniqueMessages.length} total messages (${correspondentMessages.length} individual + ${allMessages.length - correspondentMessages.length} conversation)`);
+      
+      if (uniqueMessages.length === 0) {
+        console.warn('⚠️ No messages found. Debug info:');
+        console.log('Correspondent email:', correspondent.email);
+        console.log('Available senders:', [...new Set(gmailMessages.map(m => m.from))]);
+      }
+
+      setConversationMessages(uniqueMessages);
     } catch (error) {
       console.error('Error loading correspondent messages:', error);
+      setConversationMessages([]);
     } finally {
       setLoadingConversation(false);
     }
@@ -451,80 +551,14 @@ function MainLayoutContent({
                   Aucun message Gmail
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-0">
                   {messages.map((correspondent) => (
-                    <div
+                    <SwipeableCorrespondentItem
                       key={correspondent.email}
-                      onClick={() => handleCorrespondentClick(correspondent)}
-                      style={{
-                        marginBottom: '0.50rem',
-                        height: '4rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '0.5rem',
-                        width: '100%',
-                      }}
-                      className={`cursor-pointer rounded-lg border p-3 transition-colors hover:bg-purple-50 ${
-                        correspondent.unreadCount > 0
-                          ? 'border-red-500 bg-red-200'
-                          : 'border-purple-900 bg-purple-100'
-                      }`}
-                    >
-                      <div
-                        className="flex items-start gap-3"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          width: '100%',
-                        }}
-                      >
-                        <div className="relative">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 text-xs font-medium">
-                            {correspondent.name.charAt(0).toUpperCase()}
-                          </div>
-                          {correspondent.unreadCount > 0 && (
-                            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
-                              {correspondent.unreadCount > 9 ? '9+' : correspondent.unreadCount}
-                            </span>
-                          )}
-                          <Mail className="absolute -bottom-0.5 -right-0.5 h-2 w-2 text-purple-600" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="mb-1 flex items-center justify-between">
-                            <span
-                              className={`truncate text-sm font-medium ${
-                                correspondent.unreadCount > 0
-                                  ? 'text-gray-900'
-                                  : 'text-gray-600'
-                              }`}
-                            >
-                              {correspondent.name}
-                            </span>
-                            <span
-                              className={`text-xs ${
-                                correspondent.unreadCount > 0
-                                  ? 'text-gray-700'
-                                  : 'text-gray-400'
-                              }`}
-                            >
-                              {correspondent.lastMessage.time}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <p
-                              className={`line-clamp-2 text-xs ${
-                                correspondent.unreadCount > 0 ? 'text-gray-700' : 'text-gray-400'
-                              }`}
-                            >
-                              {correspondent.lastMessage.preview}
-                            </p>
-                            <span className="text-xs text-gray-500 ml-2">
-                              ({correspondent.messageCount})
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      correspondent={correspondent}
+                      onCorrespondentClick={handleCorrespondentClick}
+                      onDelete={deleteCorrespondent}
+                    />
                   ))}
 
                   {gmailLoading && messages.length === 0 && (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 
 export interface GmailMessage {
@@ -19,6 +19,8 @@ interface UseGmailMessagesReturn {
   loading: boolean;
   error: string | null;
   refreshMessages: () => Promise<void>;
+  updateMessageReadStatus: (messageId: string, threadId: string) => void;
+  deleteCorrespondentMessages: (correspondentEmail: string | any) => Promise<void>;
   totalCount: number;
 }
 
@@ -29,7 +31,7 @@ export function useGmailMessages(limit: number = 25): UseGmailMessagesReturn {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (status !== 'authenticated' || !session?.user?.email) {
       console.log('Gmail Hook: Not authenticated or no email');
       return;
@@ -39,7 +41,7 @@ export function useGmailMessages(limit: number = 25): UseGmailMessagesReturn {
     setError(null);
 
     try {
-      console.log('Gmail Hook: Fetching messages...');
+      console.log('Gmail Hook: Fetching conversations...');
       const response = await fetch(`/api/gmail/conversations?limit=${limit}`, {
         method: 'GET',
         headers: {
@@ -96,11 +98,94 @@ export function useGmailMessages(limit: number = 25): UseGmailMessagesReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, [status, session?.user?.email, limit]); // Stable dependencies
 
-  const refreshMessages = async () => {
+  const refreshMessages = useCallback(async () => {
     await fetchMessages();
-  };
+  }, [fetchMessages]);
+
+  const updateMessageReadStatus = useCallback((messageId: string, threadId: string) => {
+    setMessages(prev => 
+      prev.map(msg => {
+        if (msg.id === messageId || msg.threadId === threadId) {
+          return { ...msg, unread: false };
+        }
+        return msg;
+      })
+    );
+  }, []); // Empty dependency array since setMessages is stable
+
+  const deleteCorrespondentMessages = useCallback(async (correspondentEmail: string | any) => {
+    try {
+      // Ensure we have a valid email string
+      const emailToMatch = typeof correspondentEmail === 'string' 
+        ? correspondentEmail 
+        : correspondentEmail?.email || '';
+      
+      if (!emailToMatch) {
+        console.error('Invalid correspondent email provided:', correspondentEmail);
+        return;
+      }
+      
+      console.log('Deleting messages for correspondent:', emailToMatch);
+      
+      // Use setMessages with functional update to avoid dependency on messages
+      setMessages(currentMessages => {
+        // Find all messages from this correspondent
+        const messagesToDelete = currentMessages.filter(msg => 
+          msg.from.toLowerCase().trim() === emailToMatch.toLowerCase().trim()
+        );
+
+        if (messagesToDelete.length === 0) {
+          console.log('No messages found for correspondent:', emailToMatch);
+          return currentMessages; // Return unchanged state
+        }
+
+        console.log(`Starting deletion of ${messagesToDelete.length} conversations from ${emailToMatch}`);
+
+        // Delete each conversation/thread in the background
+        const deletePromises = messagesToDelete.map(async (msg) => {
+          try {
+            const response = await fetch(`/api/gmail/conversations/${msg.threadId}/messages`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                action: 'deleteThread',
+              }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              console.error(`Failed to delete thread ${msg.threadId}:`, errorData);
+            } else {
+              console.log(`Successfully deleted thread ${msg.threadId}`);
+            }
+          } catch (error) {
+            console.error(`Error deleting thread ${msg.threadId}:`, error);
+          }
+        });
+
+        // Execute deletions in parallel but don't wait for them to complete
+        Promise.all(deletePromises).then(() => {
+          console.log(`Completed deletion of ${messagesToDelete.length} conversations from ${emailToMatch}`);
+        }).catch((error) => {
+          console.error('Some deletions failed:', error);
+        });
+
+        // Return messages without the deleted correspondent
+        return currentMessages.filter(msg => 
+          msg.from.toLowerCase().trim() !== emailToMatch.toLowerCase().trim()
+        );
+      });
+
+    } catch (error) {
+      console.error('Error in deleteCorrespondentMessages:', error);
+      throw error;
+    }
+  }, []); // Remove messages dependency to prevent infinite loop
 
   // Initial fetch
   useEffect(() => {
@@ -114,6 +199,8 @@ export function useGmailMessages(limit: number = 25): UseGmailMessagesReturn {
     loading,
     error,
     refreshMessages,
+    updateMessageReadStatus,
+    deleteCorrespondentMessages,
     totalCount,
   };
 }

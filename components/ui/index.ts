@@ -1,9 +1,9 @@
 // Base UI Components
-export { Button, buttonVariants } from './button';
+export { Button, buttonVariants } from './Button';
 
-export { Input } from './input';
+export { Input } from './Input';
 
-export { Avatar, AvatarImage, AvatarFallback } from './avatar';
+export { Avatar, AvatarImage, AvatarFallback } from './Avatar';
 
 export { 
   Typography, 

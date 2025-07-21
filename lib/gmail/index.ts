@@ -72,7 +72,7 @@ export class GmailIntegration {
       const threadsResponse = await this.emailService.fetchThreads({
         maxResults: options?.maxResults || 50,
         pageToken: options?.pageToken,
-        labelIds: options?.labelId ? [options.labelId] : ['INBOX'],
+        query: options?.labelId ? `label:${options.labelId}` : 'in:inbox OR in:sent',
       });
 
       // Get full thread details
@@ -92,6 +92,48 @@ export class GmailIntegration {
     } catch (error: any) {
       console.error('Failed to get conversations:', error);
       throw new Error(`Get conversations failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get all individual messages (not grouped by thread) - for displaying individual message bubbles
+   */
+  async getAllIndividualMessages(options?: {
+    maxResults?: number;
+    pageToken?: string;
+    labelId?: string;
+  }) {
+    try {
+      // Fetch email threads
+      const threadsResponse = await this.emailService.fetchThreads({
+        maxResults: options?.maxResults || 50,
+        pageToken: options?.pageToken,
+        query: options?.labelId ? `label:${options.labelId}` : 'in:inbox OR in:sent',
+      });
+
+      // Get all individual messages from all threads
+      const allMessages = [];
+      for (const thread of threadsResponse.threads) {
+        const fullThread = await this.emailService.fetchThreadById(thread.id);
+        // Process each message individually 
+        for (const message of fullThread.messages) {
+          const processedMessage = EmailParser.parseMessage(message);
+          const convertedMessage = this.converter.convertEmailToMessage(processedMessage);
+          allMessages.push(convertedMessage);
+        }
+      }
+
+      // Sort messages by timestamp (newest first)
+      allMessages.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      return {
+        messages: allMessages,
+        nextPageToken: threadsResponse.nextPageToken,
+        total: allMessages.length,
+      };
+    } catch (error: any) {
+      console.error('Failed to get individual messages:', error);
+      throw new Error(`Get individual messages failed: ${error.message}`);
     }
   }
 
